@@ -146,30 +146,25 @@ simulate.KL <- function(beta_initialisation, p = 200, method, pen.par = 0.0001,
 }
 
 
-save_plots <- function(result, hide_yaxt = TRUE) {
+save_plots <- function(result, hide_yaxt = TRUE, start_at_0 = FALSE, add_to_filename = "") {
   
-  objname <- paste0("KL_", result[1, "beta_initialisation"], "_", result[1, "method"])
+  objname <- paste0("KL_", result[1, "beta_initialisation"], "_", result[1, "method"], add_to_filename)
   
   pdf(paste0("plots/", objname, ".pdf"),
       width = 5,
       height = 7)
+  opar <-
+    par(
+      mfrow = c(3, 1),
+      cex.main = 2,
+      cex.lab = 2,
+      cex.axis = 2
+    )
   if (hide_yaxt) {
-    opar <-
-      par(
-        mfrow = c(3, 1),
-        cex.main = 2,
-        cex.lab = 2,
-        cex.axis = 2,
-        yaxt = "n"
-      )
+    par(yaxt = "n")
   } else {
-    opar <-
       par(
-        mfrow = c(3, 1),
-        mar = c(5.1,5,4.1,2.1), 
-        cex.main = 2,
-        cex.lab = 2,
-        cex.axis = 2,
+        mar = c(5.1,5,4.1,2.1),
         las = 1
       )
   }
@@ -187,7 +182,8 @@ save_plots <- function(result, hide_yaxt = TRUE) {
       bold(" Eq. (12)")
     )),
     xlab = "",
-    ylab = ""
+    ylab = "",
+    ylim = if (start_at_0) c(0, max(result$KL)) else c(min(result$KL), max(result$KL))
   ) 
   plot(
     result$p.model,
@@ -214,22 +210,40 @@ save_plots <- function(result, hide_yaxt = TRUE) {
 
 # run simulation ----------------------------------------------------------
 
-df_decreasing_ridge <- simulate.KL(beta_initialisation = "decreasing", method = "ridge")
-df_decreasing_ginv <- simulate.KL(beta_initialisation = "decreasing", method = "ginv")
-df_constant_ridge <- simulate.KL(beta_initialisation = "constant", method = "ridge")
-df_constant_ginv <- simulate.KL(beta_initialisation = "constant", method = "ginv")
+KL_decreasing_ridge <- simulate.KL(beta_initialisation = "decreasing", method = "ridge")
+KL_decreasing_ginv <- simulate.KL(beta_initialisation = "decreasing", method = "ginv")
+KL_constant_ridge <- simulate.KL(beta_initialisation = "constant", method = "ridge")
+KL_constant_ginv <- simulate.KL(beta_initialisation = "constant", method = "ginv")
+
+
+
+# load results ------------------------------------------------------------
+
+load("data/KL_decreasing_ridge.Rdata")
+load("data/KL_decreasing_ginv.Rdata")
+load("data/KL_constant_ridge.Rdata")
+load("data/KL_constant_ginv.Rdata")
 
 
 # save plots --------------------------------------------------------------
 
-save_plots(df_decreasing_ridge)
-save_plots(df_decreasing_ginv)
-save_plots(df_constant_ridge)
-save_plots(df_constant_ginv)
+save_plots(KL_decreasing_ridge)
+save_plots(KL_decreasing_ginv)
+save_plots(KL_constant_ridge)
+save_plots(KL_constant_ginv)
 
 
-#save_plots(df_decreasing_ginv, hide_yaxt = FALSE)
+# with y values
+save_plots(KL_decreasing_ridge, hide_yaxt = FALSE, add_to_filename = "_showy")
+save_plots(KL_decreasing_ginv, hide_yaxt = FALSE, add_to_filename = "_showy")
+save_plots(KL_constant_ridge, hide_yaxt = FALSE, add_to_filename = "_showy")
+save_plots(KL_constant_ginv, hide_yaxt = FALSE, add_to_filename = "_showy")
 
+# with y axis starting at origin
+save_plots(KL_decreasing_ridge, hide_yaxt = FALSE, start_at_0 = TRUE, add_to_filename = "_showy_start0")
+save_plots(KL_decreasing_ginv, hide_yaxt = FALSE, start_at_0 = TRUE, add_to_filename = "_showy_start0")
+save_plots(KL_constant_ridge, hide_yaxt = FALSE, start_at_0 = TRUE, add_to_filename = "_showy_start0")
+save_plots(KL_constant_ginv, hide_yaxt = FALSE, start_at_0 = TRUE, add_to_filename = "_showy_start0")
 
 # sanity check whether KL = KL.1 + KL.2 is true
 #plot(p.model, KL.1 + KL.2, type = "l" )
